@@ -48,8 +48,8 @@ function RecordsTable({ records, loading, emptyText }) {
             <tr key={r.id ?? i} className="hover:bg-gray-50 transition">
               <td className="px-5 py-3 font-medium text-gray-900">{r.student_name || r.student_id}</td>
               <td className="px-5 py-3 font-mono text-xs text-gray-500">{r.student_id}</td>
-              <td className="px-5 py-3 text-gray-500">{r.father_name || "â€”"}</td>
-              <td className="px-5 py-3 text-gray-600 font-mono text-xs">{r.subject_code || "â€”"}</td>
+              <td className="px-5 py-3 text-gray-500">{r.father_name || "—"}</td>
+              <td className="px-5 py-3 text-gray-600 font-mono text-xs">{r.subject_code || "—"}</td>
               <td className="px-5 py-3 text-gray-500 font-mono text-xs truncate max-w-[10rem]">{r.session_id}</td>
               <td className="px-5 py-3"><StatusBadge status={r.status} /></td>
               <td className="px-5 py-3 text-gray-400 text-xs whitespace-nowrap">
@@ -258,14 +258,14 @@ export default function AttendancePage() {
                 className="pl-3 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
               >
                 {sessionsLoading ? (
-                  <option>Loadingâ€¦</option>
+                  <option>Loading...</option>
                 ) : sessions.length === 0 ? (
                   <option>No sessions yet</option>
                 ) : (
                   sessions.map((s) => (
                     <option key={s.session_id} value={s.session_id}>
                       {s.session_id}
-                      {s.subject_code ? ` â€” ${s.subject_code}` : ""}
+                      {s.subject_code ? ` — ${s.subject_code}` : ""}
                       {s.status === "active" ? " (active)" : ""}
                     </option>
                   ))
@@ -297,7 +297,7 @@ export default function AttendancePage() {
               ) : (
                 subjects.map((s) => (
                   <option key={s.code} value={s.code}>
-                    {s.code} â€” {s.name}
+                    {s.code} — {s.name}
                   </option>
                 ))
               )}

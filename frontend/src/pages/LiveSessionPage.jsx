@@ -42,6 +42,7 @@ export default function LiveSessionPage() {
   const intervalRef = useRef(null);
   const sessionIdRef = useRef(sessionId);
   const studentMapRef = useRef({});
+  const markedPresentRef = useRef(new Set());
 
   useEffect(() => { sessionIdRef.current = sessionId; }, [sessionId]);
 
@@ -133,6 +134,8 @@ export default function LiveSessionPage() {
     setDetections((prev) => [logEntry, ...prev.slice(0, 49)]);
 
     if (recResult.matched && recResult.student_id) {
+      // Skip API call entirely for students already confirmed present this session
+      if (markedPresentRef.current.has(recResult.student_id)) return;
       try {
         const attendRes = await api.post("/attendance/detect", {
           session_id: sid,
@@ -140,6 +143,7 @@ export default function LiveSessionPage() {
         });
         const data = attendRes.data;
         if (!data.skipped) {
+          if (data.status === "present") markedPresentRef.current.add(data.student_id);
           setRecords((prev) => {
             const idx = prev.findIndex((r) => r.student_id === data.student_id);
             const updated = { ...data, student_name: studentName };
@@ -171,7 +175,7 @@ export default function LiveSessionPage() {
       await api.post("/sessions/", {
         session_id: sid,
         name: selectedSubject
-          ? `${selectedSubject.name}${section ? " â€“ Sec " + section : ""}`
+          ? `${selectedSubject.name}${section ? " - Sec " + section : ""}`
           : sid,
         subject_code: selectedSubject?.code || null,
         subject_name: selectedSubject?.name || null,
@@ -196,6 +200,7 @@ export default function LiveSessionPage() {
     setRunning(true);
     setDetections([]);
     setRecords([]);
+    markedPresentRef.current = new Set();
     setStarting(false);
     intervalRef.current = setInterval(() => captureAndRecognizeRef.current(), SCAN_INTERVAL_MS);
   };
@@ -228,7 +233,7 @@ export default function LiveSessionPage() {
   const detectionColor = (code) => {
     if (code === "recognized") return "text-emerald-700 bg-emerald-50 border-emerald-200";
     if (code === "no_face_detected") return "text-gray-500 bg-gray-50 border-gray-200";
-    if (code === "low_confidence_match") return "text-amber-700 bg-amber-50 border-amber-200";
+    if (code === "low_confidence_match") return "text-red-700 bg-red-50 border-red-300";
     return "text-slate-500 bg-slate-50 border-slate-200";
   };
 
@@ -256,7 +261,7 @@ export default function LiveSessionPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Startingâ€¦
+                Starting...
               </>
             ) : (
               <>
@@ -287,10 +292,10 @@ export default function LiveSessionPage() {
                 defaultValue=""
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50 disabled:text-gray-500"
               >
-                <option value="">â€” Select a subject (optional) â€”</option>
+                <option value="">— Select a subject (optional) —</option>
                 {subjects.map((s) => (
                   <option key={s.code} value={s.code}>
-                    {s.code} â€” {s.name}
+                    {s.code} — {s.name}
                     {s.department ? ` (${s.department})` : ""}
                   </option>
                 ))}
@@ -298,8 +303,8 @@ export default function LiveSessionPage() {
               {selectedSubject && (
                 <p className="text-xs text-gray-400 mt-1">
                   {selectedSubject.department ? `Dept: ${selectedSubject.department}` : ""}
-                  {selectedSubject.semester ? ` Â· Sem ${selectedSubject.semester}` : ""}
-                  {selectedSubject.credit_hours ? ` Â· ${selectedSubject.credit_hours} cr` : ""}
+                  {selectedSubject.semester ? ` · Sem ${selectedSubject.semester}` : ""}
+                  {selectedSubject.credit_hours ? ` · ${selectedSubject.credit_hours} cr` : ""}
                 </p>
               )}
             </div>
@@ -333,7 +338,7 @@ export default function LiveSessionPage() {
             {/* Active session info banner */}
             {running && selectedSubject && (
               <div className="flex flex-wrap gap-2 pt-1">
-                <InfoChip label="Subject" value={`${selectedSubject.code} â€” ${selectedSubject.name}`} />
+                <InfoChip label="Subject" value={`${selectedSubject.code} — ${selectedSubject.name}`} />
                 {selectedSubject.department && <InfoChip label="Dept" value={selectedSubject.department} />}
                 {selectedSubject.semester && <InfoChip label="Sem" value={selectedSubject.semester} />}
                 {section && <InfoChip label="Section" value={section} />}
@@ -388,7 +393,7 @@ export default function LiveSessionPage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Scanning every {SCAN_INTERVAL_MS / 1000}s â€” <strong>PRESENT</strong> after 3 detections within 10 min.
+              Scanning every {SCAN_INTERVAL_MS / 1000}s — <strong>PRESENT</strong> after 3 detections within 10 min.
             </div>
           )}
 
@@ -430,12 +435,16 @@ export default function LiveSessionPage() {
                     <div className="flex-1 min-w-0">
                       {d.code === "recognized" ? (
                         <p className="text-xs font-semibold text-emerald-800 truncate">
-                          âœ“ {d.student_name}
+                          ✓ {d.student_name}
                           {d.confidence != null && (
                             <span className="ml-2 font-normal text-emerald-600">
                               {(d.confidence * 100).toFixed(1)}%
                             </span>
                           )}
+                        </p>
+                      ) : d.code === "low_confidence_match" ? (
+                        <p className="text-xs font-semibold text-red-800 truncate">
+                          ? Unknown face — not in database
                         </p>
                       ) : (
                         <p className="text-xs truncate">{d.message}</p>
@@ -481,7 +490,7 @@ export default function LiveSessionPage() {
                         <td className="px-4 py-2.5 text-xs text-gray-500 font-mono">{r.student_id}</td>
                         <td className="px-4 py-2.5"><StatusBadge status={r.status} /></td>
                         <td className="px-4 py-2.5 text-xs text-gray-400">
-                          {r.marked_at ? new Date(r.marked_at).toLocaleTimeString() : "â€”"}
+                          {r.marked_at ? new Date(r.marked_at).toLocaleTimeString() : "—"}
                         </td>
                       </tr>
                     ))}

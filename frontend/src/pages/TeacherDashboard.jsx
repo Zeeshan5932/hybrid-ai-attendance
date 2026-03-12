@@ -5,6 +5,41 @@ import Layout from "../components/Layout";
 import StatCard from "../components/StatCard";
 import StatusBadge from "../components/StatusBadge";
 
+/** SVG donut chart for attendance distribution. */
+function AttendanceRing({ present, pending, absent }) {
+  const r = 40, size = 108, cx = 54, cy = 54;
+  const C = 2 * Math.PI * r;
+  const total = Math.max(present + pending + absent, 1);
+  const segs = [
+    { val: present, color: "#10b981" },
+    { val: pending, color: "#f59e0b" },
+    { val: absent,  color: "#e5e7eb" },
+  ];
+  let cum = 0;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
+      <g transform={`rotate(-90 ${cx} ${cy})`}>
+        {segs.map((s, i) => {
+          const len = (s.val / total) * C;
+          const off = cum;
+          cum += len;
+          return (
+            <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+              stroke={s.color} strokeWidth={15}
+              strokeDasharray={`${len} ${C}`}
+              strokeDashoffset={-off}
+            />
+          );
+        })}
+      </g>
+      <text x={cx} y={cy - 6} textAnchor="middle" fontSize={17} fontWeight={700} fill="#111827">
+        {Math.round((present / total) * 100)}%
+      </text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fontSize={10} fill="#6b7280">present</text>
+    </svg>
+  );
+}
+
 export default function TeacherDashboard() {
   const [stats, setStats] = useState(null);
   const [students, setStudents] = useState([]);
@@ -25,7 +60,7 @@ export default function TeacherDashboard() {
         const sessionsRes = await api.get("/attendance/sessions");
         if (sessionsRes.data.length > 0) {
           const latest = sessionsRes.data[0];
-          const recRes = await api.get(`/attendance/records/${latest}`);
+          const recRes = await api.get(`/attendance/records/${latest.session_id}`);
           setRecentRecords(recRes.data.slice(0, 8));
         }
       } catch {
@@ -115,6 +150,44 @@ export default function TeacherDashboard() {
               <StatCard key={c.label} {...c} />
             ))}
           </div>
+
+          {/* Attendance distribution chart */}
+          {stats && (stats.present > 0 || stats.pending > 0 || stats.absent > 0) && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <h2 className="text-sm font-semibold text-gray-900 mb-4">Attendance Distribution</h2>
+              <div className="flex items-center gap-8">
+                <AttendanceRing
+                  present={stats.present || 0}
+                  pending={stats.pending || 0}
+                  absent={stats.absent  || 0}
+                />
+                <div className="flex-1 space-y-3">
+                  {[
+                    { label: "Present", value: stats.present || 0, dot: "bg-emerald-500" },
+                    { label: "Pending", value: stats.pending || 0, dot: "bg-amber-400"   },
+                    { label: "Other",   value: stats.absent  || 0, dot: "bg-gray-300"    },
+                  ].map((item) => {
+                    const pct = Math.round((item.value / Math.max(stats.total_records, 1)) * 100);
+                    return (
+                      <div key={item.label}>
+                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                          <span className="flex items-center gap-1.5">
+                            <span className={`w-2 h-2 rounded-full ${item.dot}`} />
+                            {item.label}
+                          </span>
+                          <span className="font-medium text-gray-700">{item.value} ({pct}%)</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                          <div className={`h-full rounded-full transition-all duration-700 ${item.dot}`}
+                            style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent students */}
