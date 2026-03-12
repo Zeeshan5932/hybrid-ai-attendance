@@ -8,6 +8,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import StudentsPage from "./pages/StudentsPage";
 import AttendancePage from "./pages/AttendancePage";
 import LiveSessionPage from "./pages/LiveSessionPage";
+import SubjectsPage from "./pages/SubjectsPage";
 
 export default function App() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function App() {
       <Route element={<ProtectedRoute allowedRole="teacher" />}>
         <Route path="/" element={<TeacherDashboard />} />
         <Route path="/students" element={<StudentsPage />} />
+        <Route path="/subjects" element={<SubjectsPage />} />
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/live" element={<LiveSessionPage />} />
       </Route>

@@ -13,9 +13,11 @@ def _student_dict(s: Student) -> dict:
         "id": s.id,
         "student_code": s.student_code,
         "full_name": s.full_name,
+        "father_name": s.father_name,
         "department": s.department,
+        "semester": s.semester,
+        "section": s.section,
         "face_embedding_id": s.face_embedding_id,
-        # Convenience flag: True when a face embedding has been stored
         "has_face": bool(s.face_embedding_id),
     }
 
@@ -28,12 +30,12 @@ def create_student(
 ):
     existing = db.query(Student).filter(Student.student_code == payload.student_code).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Student already exists")
+        raise HTTPException(status_code=400, detail="A student with this roll number already exists.")
     student = Student(**payload.model_dump())
     db.add(student)
     db.commit()
     db.refresh(student)
-    return student
+    return _student_dict(student)
 
 
 @router.get("/")
@@ -41,8 +43,7 @@ def list_students(
     db: Session = Depends(get_db),
     _u: dict = Depends(get_current_user),
 ):
-    """Any authenticated user can list students."""
-    return [_student_dict(s) for s in db.query(Student).all()]
+    return [_student_dict(s) for s in db.query(Student).order_by(Student.student_code).all()]
 
 
 @router.get("/{student_id}")
@@ -57,13 +58,30 @@ def get_student(
     return _student_dict(student)
 
 
+@router.put("/{student_id}")
+def update_student(
+    student_id: int,
+    payload: StudentCreate,
+    db: Session = Depends(get_db),
+    _t: dict = Depends(require_teacher),
+):
+    """Update all student fields (teacher-only)."""
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(student, field, value)
+    db.commit()
+    db.refresh(student)
+    return _student_dict(student)
+
+
 @router.delete("/{student_id}")
 def delete_student(
     student_id: int,
     db: Session = Depends(get_db),
     _t: dict = Depends(require_teacher),
 ):
-    """Teacher-only: remove a student record."""
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")

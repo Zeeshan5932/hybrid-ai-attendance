@@ -6,6 +6,12 @@ from sqlalchemy import text
 from fastapi import FastAPI
 from core.db import Base, engine
 from routes import auth, students, recognition, attendance
+from routes import sessions as sessions_route
+from routes import subjects as subjects_route
+
+# Ensure all models are imported before create_all so their tables are created
+import models.session   # noqa: F401  registers AttendanceSession with Base
+import models.subject   # noqa: F401  registers Subject with Base
 
 Base.metadata.create_all(bind=engine)
 
@@ -23,6 +29,8 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(students.router, prefix="/students", tags=["students"])
 app.include_router(recognition.router, prefix="/recognition", tags=["recognition"])
 app.include_router(attendance.router, prefix="/attendance", tags=["attendance"])
+app.include_router(sessions_route.router, prefix="/sessions", tags=["sessions"])
+app.include_router(subjects_route.router, prefix="/subjects", tags=["subjects"])
 
 
 @app.get("/")

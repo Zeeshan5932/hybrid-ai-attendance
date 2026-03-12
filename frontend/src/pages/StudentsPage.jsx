@@ -6,14 +6,23 @@ import Toast from "../components/Toast";
 
 // ── Add Student Modal ─────────────────────────────────────────────
 function AddStudentModal({ onClose, onCreated }) {
-  const [form, setForm] = useState({ student_code: "", full_name: "", department: "" });
+  const [form, setForm] = useState({
+    student_code: "",
+    full_name: "",
+    father_name: "",
+    department: "",
+    semester: "",
+    section: "",
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.student_code.trim() || !form.full_name.trim()) {
-      setError("Student code and full name are required.");
+      setError("Roll number and full name are required.");
       return;
     }
     setError("");
@@ -32,16 +41,23 @@ function AddStudentModal({ onClose, onCreated }) {
   return (
     <ModalShell title="Add New Student" onClose={onClose}>
       {error && <ErrorBanner message={error} />}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Student Code" name="student_code" value={form.student_code}
-          onChange={(e) => setForm({ ...form, student_code: e.target.value })}
-          placeholder="e.g. ST001" required />
-        <Field label="Full Name" name="full_name" value={form.full_name}
-          onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-          placeholder="e.g. Ali Raza" required />
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Roll Number *" name="student_code" value={form.student_code}
+            onChange={set("student_code")} placeholder="e.g. BS-CS-F21-001" required />
+          <Field label="Full Name *" name="full_name" value={form.full_name}
+            onChange={set("full_name")} placeholder="e.g. Ali Raza" required />
+        </div>
+        <Field label="Father's Name" name="father_name" value={form.father_name}
+          onChange={set("father_name")} placeholder="e.g. Muhammad Raza" />
         <Field label="Department" name="department" value={form.department}
-          onChange={(e) => setForm({ ...form, department: e.target.value })}
-          placeholder="e.g. Computer Science" />
+          onChange={set("department")} placeholder="e.g. Computer Science" />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Semester" name="semester" value={form.semester}
+            onChange={set("semester")} placeholder="e.g. 5" />
+          <Field label="Section" name="section" value={form.section}
+            onChange={set("section")} placeholder="e.g. A" />
+        </div>
         <div className="flex gap-3 pt-2">
           <button type="button" onClick={onClose}
             className="flex-1 py-2.5 border border-gray-300 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 transition">
@@ -330,7 +346,10 @@ export default function StudentsPage() {
     !search ||
     s.full_name.toLowerCase().includes(search.toLowerCase()) ||
     s.student_code.toLowerCase().includes(search.toLowerCase()) ||
-    (s.department || "").toLowerCase().includes(search.toLowerCase())
+    (s.father_name || "").toLowerCase().includes(search.toLowerCase()) ||
+    (s.department || "").toLowerCase().includes(search.toLowerCase()) ||
+    (s.semester || "").toString().includes(search) ||
+    (s.section || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -395,8 +414,9 @@ export default function StudentsPage() {
               <thead>
                 <tr className="text-left text-xs text-gray-500 uppercase tracking-wide bg-gray-50">
                   <th className="px-5 py-3 font-medium">Student</th>
-                  <th className="px-5 py-3 font-medium">Code</th>
-                  <th className="px-5 py-3 font-medium">Department</th>
+                  <th className="px-5 py-3 font-medium">Roll No.</th>
+                  <th className="px-5 py-3 font-medium">Father's Name</th>
+                  <th className="px-5 py-3 font-medium">Dept / Sem / Sec</th>
                   <th className="px-5 py-3 font-medium">Face</th>
                   <th className="px-5 py-3 font-medium text-right">Actions</th>
                 </tr>
@@ -412,8 +432,17 @@ export default function StudentsPage() {
                         <span className="font-medium text-gray-900">{s.full_name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-gray-600 font-mono">{s.student_code}</td>
-                    <td className="px-5 py-3 text-gray-600">{s.department || "—"}</td>
+                    <td className="px-5 py-3 text-gray-600 font-mono text-xs">{s.student_code}</td>
+                    <td className="px-5 py-3 text-gray-600">{s.father_name || "—"}</td>
+                    <td className="px-5 py-3 text-gray-600">
+                      <span>{s.department || "—"}</span>
+                      {(s.semester || s.section) && (
+                        <span className="ml-1 text-xs text-gray-400">
+                          {s.semester ? `· Sem ${s.semester}` : ""}
+                          {s.section ? ` · Sec ${s.section}` : ""}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-5 py-3">
                       <StatusBadge status={s.has_face ? "registered" : "no_face"} />
                     </td>
