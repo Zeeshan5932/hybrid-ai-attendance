@@ -11,4 +11,6 @@ venv/
 .vscode/
 *.db
 .DS_Store
-backend/services/recognition-service/vector_store.pkl
+backend/services/
+backend/gateway/
+vector_store.pkl

@@ -21,48 +21,13 @@ services:
     ports:
       - "6379:6379"
 
-  gateway:
-    build: ./backend/gateway
-    container_name: gateway
+  backend:
+    build: ./backend
+    container_name: attendance-backend
     env_file:
-      - ./backend/gateway/.env
+      - .env
     ports:
       - "8000:8000"
-    depends_on:
-      - auth-service
-      - student-service
-      - recognition-service
-      - attendance-service
-
-  auth-service:
-    build: ./backend/services/auth-service
-    container_name: auth-service
-    env_file:
-      - ./backend/services/auth-service/.env
-    depends_on:
-      - postgres
-
-  student-service:
-    build: ./backend/services/student-service
-    container_name: student-service
-    env_file:
-      - ./backend/services/student-service/.env
-    depends_on:
-      - postgres
-
-  recognition-service:
-    build: ./backend/services/recognition-service
-    container_name: recognition-service
-    env_file:
-      - ./backend/services/recognition-service/.env
-    depends_on:
-      - redis
-
-  attendance-service:
-    build: ./backend/services/attendance-service
-    container_name: attendance-service
-    env_file:
-      - ./backend/services/attendance-service/.env
     depends_on:
       - postgres
       - redis
@@ -70,12 +35,12 @@ services:
   frontend:
     build: ./frontend
     container_name: attendance-frontend
-    env_file:
-      - ./frontend/.env
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
     ports:
       - "5173:5173"
     depends_on:
-      - gateway
+      - backend
 
 volumes:
   postgres_data:

@@ -1,26 +1,44 @@
 # Hybrid AI Attendance System
 
-## Run project
+Monorepo with one FastAPI backend and one React/Vite frontend.
+
+## Structure
+
+```
+hybrid-ai-attendance/
+├── .env
+├── docker-compose.yml
+├── backend/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── app.py
+│   ├── core/        (config, db, security)
+│   ├── models/      (user, student, attendance)
+│   ├── schemas/     (auth, student, attendance)
+│   ├── routes/      (auth, students, recognition, attendance)
+│   ├── services/    (matcher, embedding_store, attendance_rules)
+│   └── scripts/     (seed_demo.py)
+└── frontend/
+    ├── Dockerfile
+    └── src/
+```
+
+## Run
+
 ```bash
 docker compose up --build
 ```
 
-## Open frontend
+## URLs
 
-* http://localhost:5173
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
 
-## Open gateway
-
-* http://localhost:8000
-
-## Health checks
+## Health check
 
 ```bash
-curl http://localhost:8000/
-curl http://localhost:8000/auth/health
-curl http://localhost:8000/students/health
-curl http://localhost:8000/recognition/health
-curl http://localhost:8000/attendance/health
+curl http://localhost:8000/health
 ```
 
 ## Register user
@@ -34,12 +52,12 @@ curl -X POST http://localhost:8000/auth/register \
 ## Add student
 
 ```bash
-curl -X POST http://localhost:8000/students/students \
+curl -X POST http://localhost:8000/students/ \
   -H "Content-Type: application/json" \
   -d '{"student_code":"ST001","full_name":"Ali Raza","department":"CS","face_embedding_id":"1"}'
 ```
 
-## Register sample embedding
+## Register face embedding
 
 ```bash
 curl -X POST http://localhost:8000/recognition/register-embedding \
@@ -55,4 +73,10 @@ curl -X POST http://localhost:8000/attendance/detect \
   -d '{"session_id":"class-001","student_id":"1"}'
 ```
 
-After 3 detections within 10 minutes, student becomes `present`.
+After **3 detections within 10 minutes**, the student becomes `present`.
+
+## Seed demo data
+
+```bash
+python backend/scripts/seed_demo.py
+```
