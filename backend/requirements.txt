@@ -6,7 +6,10 @@ pydantic==2.9.2
 pydantic-settings==2.5.2
 python-jose==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 python-multipart==0.0.9
 numpy==2.1.1
 redis==5.0.8
 python-dotenv==1.0.1
+# Face detection engine — provides cv2 without desktop GUI dependencies
+opencv-python-headless>=4.9.0

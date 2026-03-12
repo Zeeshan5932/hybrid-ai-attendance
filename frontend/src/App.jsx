@@ -1,42 +1,38 @@
-import { useEffect, useState } from "react";
-import api from "./api";
-import Navbar from "./components/Navbar";
-import HealthCards from "./components/HealthCards";
-import StudentForm from "./components/StudentForm";
-import AttendancePanel from "./components/AttendancePanel";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import TeacherDashboard from "./pages/TeacherDashboard";
+import StudentDashboard from "./pages/StudentDashboard";
+import StudentsPage from "./pages/StudentsPage";
+import AttendancePage from "./pages/AttendancePage";
+import LiveSessionPage from "./pages/LiveSessionPage";
 
 export default function App() {
-  const [students, setStudents] = useState([]);
-
-  const loadStudents = async () => {
-    const response = await api.get("/students/");
-    setStudents(response.data);
-  };
-
-  useEffect(() => {
-    loadStudents();
-  }, []);
+  const { user } = useAuth();
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", background: "#f3f4f6", minHeight: "100vh" }}>
-      <Navbar />
-      <div style={{ maxWidth: 1200, margin: "20px auto", padding: 16 }}>
-        <HealthCards />
+    <Routes>
+      {/* Public routes */}
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route path="/signup" element={user ? <Navigate to="/" replace /> : <SignupPage />} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
-          <StudentForm onCreated={loadStudents} />
-          <AttendancePanel />
-        </div>
+      {/* Teacher-only routes */}
+      <Route element={<ProtectedRoute allowedRole="teacher" />}>
+        <Route path="/" element={<TeacherDashboard />} />
+        <Route path="/students" element={<StudentsPage />} />
+        <Route path="/attendance" element={<AttendancePage />} />
+        <Route path="/live" element={<LiveSessionPage />} />
+      </Route>
 
-        <div style={{ marginTop: 16, background: "white", padding: 16, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
-          <h3>Students</h3>
-          {students.map((student) => (
-            <div key={student.id} style={{ padding: 10, borderBottom: "1px solid #eee" }}>
-              <strong>{student.full_name}</strong> ({student.student_code}) - {student.department}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+      {/* Student-only routes */}
+      <Route element={<ProtectedRoute allowedRole="student" />}>
+        <Route path="/my-attendance" element={<StudentDashboard />} />
+      </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
+    </Routes>
   );
 }
