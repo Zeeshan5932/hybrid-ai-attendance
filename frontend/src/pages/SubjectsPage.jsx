@@ -80,7 +80,7 @@ function SubjectModal({ subject, onClose, onSaved }) {
       const payload = {
         ...form,
         semester: form.semester || null,
-        credit_hours: form.credit_hours ? Number(form.credit_hours) : null,
+        credit_hours: form.credit_hours ? String(form.credit_hours) : null,
       };
       if (isEdit) {
         await api.put(`/subjects/${subject.id}`, payload);
