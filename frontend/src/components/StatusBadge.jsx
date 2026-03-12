@@ -1,38 +1,45 @@
 /**
- * StatusBadge — displays attendance/face status with colour-coded pill.
+ * StatusBadge — animated pill with dot indicator.
  * Usage: <StatusBadge status="present" />
  */
 const VARIANTS = {
-  present:   "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  pending:   "bg-amber-100  text-amber-800  border border-amber-200",
-  absent:    "bg-red-100    text-red-800    border border-red-200",
-  recognized:"bg-blue-100   text-blue-800   border border-blue-200",
-  registered:"bg-indigo-100 text-indigo-800 border border-indigo-200",
-  low_confidence: "bg-orange-100 text-orange-800 border border-orange-200",
-  no_face:   "bg-gray-100   text-gray-600   border border-gray-200",
-  error:     "bg-red-100    text-red-800    border border-red-200",
-  active:    "bg-green-100  text-green-700  border border-green-200",
-  inactive:  "bg-gray-100   text-gray-500   border border-gray-200",
+  present:        { bg: "rgba(16,185,129,0.12)",  text: "#065f46", dot: "#10b981",  border: "rgba(16,185,129,0.3)"  },
+  pending:        { bg: "rgba(245,158,11,0.12)",  text: "#92400e", dot: "#f59e0b",  border: "rgba(245,158,11,0.3)"  },
+  absent:         { bg: "rgba(244,63,94,0.11)",   text: "#9f1239", dot: "#f43f5e",  border: "rgba(244,63,94,0.25)"  },
+  recognized:     { bg: "rgba(6,182,212,0.12)",   text: "#164e63", dot: "#06b6d4",  border: "rgba(6,182,212,0.3)"   },
+  registered:     { bg: "rgba(147,51,234,0.12)",  text: "#4c1d95", dot: "#9333ea",  border: "rgba(147,51,234,0.3)"  },
+  low_confidence: { bg: "rgba(249,115,22,0.12)",  text: "#7c2d12", dot: "#f97316",  border: "rgba(249,115,22,0.3)"  },
+  no_face:        { bg: "rgba(148,163,184,0.12)", text: "#475569", dot: "#94a3b8",  border: "rgba(148,163,184,0.3)" },
+  error:          { bg: "rgba(244,63,94,0.11)",   text: "#9f1239", dot: "#f43f5e",  border: "rgba(244,63,94,0.25)"  },
+  active:         { bg: "rgba(16,185,129,0.12)",  text: "#065f46", dot: "#10b981",  border: "rgba(16,185,129,0.3)"  },
+  inactive:       { bg: "rgba(148,163,184,0.12)", text: "#475569", dot: "#94a3b8",  border: "rgba(148,163,184,0.3)" },
 };
 
 const LABELS = {
-  present:   "Present",
-  pending:   "Pending",
-  absent:    "Absent",
-  recognized:"Recognized",
-  registered:"Face Registered",
-  low_confidence: "Low Confidence",
-  no_face:   "No Face",
-  error:     "Error",
-  active:    "Active",
-  inactive:  "Inactive",
+  present:        "Present",
+  pending:        "Pending",
+  absent:         "Absent",
+  recognized:     "Recognized",
+  registered:     "Registered",
+  low_confidence: "Low Conf.",
+  no_face:        "No Face",
+  error:          "Error",
+  active:         "Active",
+  inactive:       "Inactive",
 };
 
 export default function StatusBadge({ status }) {
-  const cls = VARIANTS[status] || "bg-gray-100 text-gray-600 border border-gray-200";
+  const v = VARIANTS[status] || VARIANTS.inactive;
   const label = LABELS[status] || status;
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold"
+      style={{ background: v.bg, color: v.text, border: `1px solid ${v.border}` }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+        style={{ background: v.dot, boxShadow: `0 0 5px ${v.dot}` }}
+      />
       {label}
     </span>
   );

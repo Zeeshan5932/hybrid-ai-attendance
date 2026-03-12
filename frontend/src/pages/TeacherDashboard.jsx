@@ -11,9 +11,9 @@ function AttendanceRing({ present, pending, absent }) {
   const C = 2 * Math.PI * r;
   const total = Math.max(present + pending + absent, 1);
   const segs = [
-    { val: present, color: "#10b981" },
+    { val: present, color: "#9333ea" },
     { val: pending, color: "#f59e0b" },
-    { val: absent,  color: "#e5e7eb" },
+    { val: absent,  color: "rgba(147,51,234,0.12)" },
   ];
   let cum = 0;
   return (
@@ -163,9 +163,9 @@ export default function TeacherDashboard() {
                 />
                 <div className="flex-1 space-y-3">
                   {[
-                    { label: "Present", value: stats.present || 0, dot: "bg-emerald-500" },
-                    { label: "Pending", value: stats.pending || 0, dot: "bg-amber-400"   },
-                    { label: "Other",   value: stats.absent  || 0, dot: "bg-gray-300"    },
+                    { label: "Present", value: stats.present || 0, dot: "bg-brand-600" },
+                    { label: "Pending", value: stats.pending || 0, dot: "bg-amber-400"  },
+                    { label: "Other",   value: stats.absent  || 0, dot: "bg-brand-200" },
                   ].map((item) => {
                     const pct = Math.round((item.value / Math.max(stats.total_records, 1)) * 100);
                     return (
@@ -263,7 +263,7 @@ export default function TeacherDashboard() {
 
           {/* Quick actions */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider" style={{color:"#6b21a8"}}>Quick Actions</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { to: "/students", label: "Add Student", icon: "👤" },
@@ -274,7 +274,10 @@ export default function TeacherDashboard() {
                 <Link
                   key={a.to + a.label}
                   to={a.to}
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed transition group card-hover"
+                style={{ borderColor:"rgba(147,51,234,0.2)" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor="#9333ea"; e.currentTarget.style.background="rgba(147,51,234,0.05)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(147,51,234,0.2)"; e.currentTarget.style.background="transparent"; }}
                 >
                   <span className="text-2xl">{a.icon}</span>
                   <span className="text-xs font-medium text-gray-600 group-hover:text-indigo-700">{a.label}</span>

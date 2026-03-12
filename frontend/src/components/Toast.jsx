@@ -1,40 +1,36 @@
 import { useEffect } from "react";
 
-/**
- * Toast notification that auto-dismisses after `duration` ms.
- * Props: message, type ("success"|"error"|"info"|"warning"), onClose
- */
 const ICONS = {
   success: (
-    <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-5 h-5" style={{color:"#10b981"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
     </svg>
   ),
   error: (
-    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-5 h-5" style={{color:"#f43f5e"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
   warning: (
-    <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-5 h-5" style={{color:"#f59e0b"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>
   ),
   info: (
-    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="w-5 h-5" style={{color:"#06b6d4"}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
 };
 
-const BG = {
-  success: "border-emerald-200 bg-emerald-50",
-  error:   "border-red-200   bg-red-50",
-  warning: "border-amber-200 bg-amber-50",
-  info:    "border-blue-200  bg-blue-50",
+const STYLE = {
+  success: { bg: "rgba(240,253,247,0.97)", border: "rgba(16,185,129,0.3)",  shadow: "rgba(16,185,129,0.15)"  },
+  error:   { bg: "rgba(255,241,242,0.97)", border: "rgba(244,63,94,0.3)",   shadow: "rgba(244,63,94,0.15)"   },
+  warning: { bg: "rgba(255,251,235,0.97)", border: "rgba(245,158,11,0.3)",  shadow: "rgba(245,158,11,0.15)"  },
+  info:    { bg: "rgba(240,249,255,0.97)", border: "rgba(6,182,212,0.3)",   shadow: "rgba(6,182,212,0.15)"   },
 };
 
 export default function Toast({ message, type = "info", duration = 4000, onClose }) {
@@ -43,11 +39,23 @@ export default function Toast({ message, type = "info", duration = 4000, onClose
     return () => clearTimeout(t);
   }, [duration, onClose]);
 
+  const s = STYLE[type] || STYLE.info;
   return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-start gap-3 px-4 py-3 rounded-xl border shadow-lg max-w-sm ${BG[type] || BG.info}`}>
+    <div
+      className="fixed bottom-6 right-6 z-50 flex items-start gap-3 px-4 py-3 rounded-2xl max-w-sm animate-toast-in"
+      style={{
+        background: s.bg,
+        border: `1px solid ${s.border}`,
+        backdropFilter: "blur(16px)",
+        boxShadow: `0 8px 32px ${s.shadow}, 0 2px 8px rgba(0,0,0,0.08)`,
+      }}
+    >
       <span className="mt-0.5 flex-shrink-0">{ICONS[type] || ICONS.info}</span>
-      <p className="text-sm text-gray-800 leading-snug">{message}</p>
-      <button onClick={onClose} className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-600">
+      <p className="text-sm text-gray-800 leading-snug flex-1">{message}</p>
+      <button
+        onClick={onClose}
+        className="ml-1 flex-shrink-0 text-gray-300 hover:text-gray-500 transition-colors"
+      >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
