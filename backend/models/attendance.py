@@ -20,6 +20,10 @@ class AttendanceRecord(Base):
     student_id = Column(String, nullable=False, index=True)
     # Denormalized for instant display without joins
     subject_code = Column(String, nullable=True, index=True)
+    subject_name = Column(String, nullable=True)
+    department = Column(String, nullable=True)
+    semester = Column(String, nullable=True)
+    section = Column(String, nullable=True)
     student_name = Column(String, nullable=True)
     father_name = Column(String, nullable=True)
     status = Column(String, default="pending")

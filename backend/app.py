@@ -15,11 +15,25 @@ import models.subject   # noqa: F401  registers Subject with Base
 
 Base.metadata.create_all(bind=engine)
 
+# Safe column migration — adds new columns to attendance_records if they don't exist yet.
+# This handles databases created before subject_name / department / semester / section were added.
+_NEW_COLS = ["subject_name VARCHAR", "department VARCHAR", "semester VARCHAR", "section VARCHAR"]
+with engine.connect() as _conn:
+    for _col_def in _NEW_COLS:
+        _col_name = _col_def.split()[0]
+        try:
+            _conn.execute(text(
+                f"ALTER TABLE attendance_records ADD COLUMN IF NOT EXISTS {_col_def}"
+            ))
+            _conn.commit()
+        except Exception:
+            _conn.rollback()
+
 app = FastAPI(title="Hybrid AI Attendance System")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173" , "https://hybrid-ai-attendance.vercel.app/login"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

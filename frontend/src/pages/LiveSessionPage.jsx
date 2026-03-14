@@ -43,6 +43,7 @@ export default function LiveSessionPage() {
   const sessionIdRef = useRef(sessionId);
   const studentMapRef = useRef({});
   const markedPresentRef = useRef(new Set());
+  const handleStopRef = useRef(null);
 
   useEffect(() => { sessionIdRef.current = sessionId; }, [sessionId]);
 
@@ -143,7 +144,11 @@ export default function LiveSessionPage() {
         });
         const data = attendRes.data;
         if (!data.skipped) {
-          if (data.status === "present") markedPresentRef.current.add(data.student_id);
+          if (data.status === "present") {
+            markedPresentRef.current.add(data.student_id);
+            setToast({ message: `✓ ${studentName || data.student_id} marked Present! Camera stopping…`, type: "success" });
+            setTimeout(() => handleStopRef.current?.(), 2000);
+          }
           setRecords((prev) => {
             const idx = prev.findIndex((r) => r.student_id === data.student_id);
             const updated = { ...data, student_name: studentName };
@@ -223,6 +228,8 @@ export default function LiveSessionPage() {
       })
       .catch(() => {});
   };
+
+  handleStopRef.current = handleStop;
 
   useEffect(
     () => () => { clearInterval(intervalRef.current); stopCamera(); },

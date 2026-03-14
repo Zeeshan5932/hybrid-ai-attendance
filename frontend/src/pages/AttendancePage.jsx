@@ -38,6 +38,7 @@ function RecordsTable({ records, loading, emptyText }) {
             <th className="px-5 py-3 font-medium">Roll No.</th>
             <th className="px-5 py-3 font-medium">Father's Name</th>
             <th className="px-5 py-3 font-medium">Subject</th>
+            <th className="px-5 py-3 font-medium">Department</th>
             <th className="px-5 py-3 font-medium">Session</th>
             <th className="px-5 py-3 font-medium">Status</th>
             <th className="px-5 py-3 font-medium">Time</th>
@@ -49,7 +50,13 @@ function RecordsTable({ records, loading, emptyText }) {
               <td className="px-5 py-3 font-medium text-gray-900">{r.student_name || r.student_id}</td>
               <td className="px-5 py-3 font-mono text-xs text-gray-500">{r.student_id}</td>
               <td className="px-5 py-3 text-gray-500">{r.father_name || "—"}</td>
-              <td className="px-5 py-3 text-gray-600 font-mono text-xs">{r.subject_code || "—"}</td>
+              <td className="px-5 py-3 text-xs">
+                <p className="font-medium text-gray-800">{r.subject_name || r.subject_code || "—"}</p>
+                {r.subject_name && r.subject_code && (
+                  <p className="text-gray-400 font-mono">{r.subject_code}</p>
+                )}
+              </td>
+              <td className="px-5 py-3 text-xs text-gray-500">{r.department || "—"}</td>
               <td className="px-5 py-3 text-gray-500 font-mono text-xs truncate max-w-[10rem]">{r.session_id}</td>
               <td className="px-5 py-3"><StatusBadge status={r.status} /></td>
               <td className="px-5 py-3 text-gray-400 text-xs whitespace-nowrap">
